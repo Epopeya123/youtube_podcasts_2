@@ -5,11 +5,13 @@ import com.ytaudio.app.data.local.entity.VideoEntity
 import com.ytaudio.app.domain.model.DownloadStatus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import android.util.Log
 import org.schabi.newpipe.extractor.Image
 import org.schabi.newpipe.extractor.NewPipe
 import org.schabi.newpipe.extractor.ServiceList
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabInfo
 import org.schabi.newpipe.extractor.channel.tabs.ChannelTabs
+import org.schabi.newpipe.extractor.services.youtube.YoutubeJavaScriptPlayerManager
 import org.schabi.newpipe.extractor.stream.StreamExtractor
 import org.schabi.newpipe.extractor.stream.StreamInfoItem
 import javax.inject.Inject
@@ -23,58 +25,94 @@ class YouTubeExtractorService @Inject constructor() {
     }
 
     /**
+     * Retry an extraction with cache clearing on failure.
+     * NewPipe often fails on first attempt with "page needs to be reloaded".
+     */
+    private suspend fun <T> withRetry(block: suspend () -> T): T {
+        return try {
+            block()
+        } catch (e: Exception) {
+            Log.w(TAG, "First attempt failed, clearing caches and retrying: ${e.message}")
+            YoutubeJavaScriptPlayerManager.clearAllCaches()
+            block()
+        }
+    }
+
+    /**
      * Extract the best audio stream URL from a YouTube video.
      * Must be called immediately before downloading - URLs expire quickly.
      */
     suspend fun extractAudioStreamUrl(videoUrl: String): AudioStreamInfo = withContext(Dispatchers.IO) {
-        val extractor = ServiceList.YouTube.getStreamExtractor(videoUrl)
-        extractor.fetchPage()
+        withRetry {
+            val extractor = ServiceList.YouTube.getStreamExtractor(videoUrl)
+            extractor.fetchPage()
 
-        val audioStreams = extractor.audioStreams
-            .filterNotNull()
-            .sortedByDescending { it.averageBitrate }
+            val audioStreams = extractor.audioStreams
+                .filterNotNull()
+                .sortedByDescending { it.averageBitrate }
 
-        val best = audioStreams.firstOrNull()
-            ?: throw IllegalStateException("No audio streams available for $videoUrl")
+            // Prefer M4A/MP4 streams (MediaStore-compatible), fall back to WebM/Opus
+            val m4aStreams = audioStreams.filter {
+                it.format?.mimeType?.contains("mp4") == true ||
+                it.format?.mimeType?.contains("m4a") == true
+            }
+            val best = m4aStreams.firstOrNull() ?: audioStreams.firstOrNull()
+                ?: throw IllegalStateException("No audio streams available for $videoUrl")
 
-        AudioStreamInfo(
-            url = best.content,
-            mimeType = best.format?.mimeType ?: "audio/mp4",
-            extension = best.format?.suffix ?: "m4a",
-            bitrate = best.averageBitrate
-        )
+            // Map MIME types to MediaStore-compatible values
+            val rawMime = best.format?.mimeType ?: "audio/mp4"
+            val mimeType = when {
+                rawMime.contains("webm") -> "audio/ogg"  // WebM Opus -> OGG for MediaStore
+                else -> rawMime
+            }
+            val extension = when {
+                rawMime.contains("webm") -> "ogg"
+                else -> best.format?.suffix ?: "m4a"
+            }
+
+            AudioStreamInfo(
+                url = best.content,
+                mimeType = mimeType,
+                extension = extension,
+                bitrate = best.averageBitrate
+            )
+        }
     }
 
     /**
      * Get video metadata from a YouTube video URL.
      */
     suspend fun getVideoInfo(videoUrl: String): VideoEntity = withContext(Dispatchers.IO) {
-        val extractor = ServiceList.YouTube.getStreamExtractor(videoUrl)
-        extractor.fetchPage()
+        withRetry {
+            val extractor = ServiceList.YouTube.getStreamExtractor(videoUrl)
+            extractor.fetchPage()
 
-        VideoEntity(
-            id = extractVideoId(extractor),
-            title = extractor.name ?: "Unknown",
-            thumbnailUrl = bestThumbnail(extractor.thumbnails),
-            duration = extractor.length,
-            publishedAt = parseUploadDate(extractor),
-            downloadStatus = DownloadStatus.NONE
-        )
+            VideoEntity(
+                id = extractVideoId(extractor),
+                title = extractor.name ?: "Unknown",
+                thumbnailUrl = bestThumbnail(extractor.thumbnails),
+                duration = extractor.length,
+                publishedAt = parseUploadDate(extractor),
+                downloadStatus = DownloadStatus.NONE
+            )
+        }
     }
 
     /**
      * Get channel info from a YouTube channel URL.
      */
     suspend fun getChannelInfo(channelUrl: String): ChannelEntity = withContext(Dispatchers.IO) {
-        val extractor = ServiceList.YouTube.getChannelExtractor(channelUrl)
-        extractor.fetchPage()
+        withRetry {
+            val extractor = ServiceList.YouTube.getChannelExtractor(channelUrl)
+            extractor.fetchPage()
 
-        ChannelEntity(
-            id = extractor.id,
-            name = extractor.name ?: "Unknown Channel",
-            url = extractor.url,
-            thumbnailUrl = bestThumbnail(extractor.avatars)
-        )
+            ChannelEntity(
+                id = extractor.id,
+                name = extractor.name ?: "Unknown Channel",
+                url = extractor.url,
+                thumbnailUrl = bestThumbnail(extractor.avatars)
+            )
+        }
     }
 
     /**
@@ -82,33 +120,35 @@ class YouTubeExtractorService @Inject constructor() {
      * Uses the Videos tab from the channel page.
      */
     suspend fun getChannelVideos(channelUrl: String): List<VideoEntity> = withContext(Dispatchers.IO) {
-        val channelExtractor = ServiceList.YouTube.getChannelExtractor(channelUrl)
-        channelExtractor.fetchPage()
+        withRetry {
+            val channelExtractor = ServiceList.YouTube.getChannelExtractor(channelUrl)
+            channelExtractor.fetchPage()
 
-        val channelId = channelExtractor.id
+            val channelId = channelExtractor.id
 
-        // Find the Videos tab
-        val videosTab = channelExtractor.tabs.firstOrNull { tab ->
-            tab.contentFilters.contains(ChannelTabs.VIDEOS)
-        } ?: return@withContext emptyList()
+            // Find the Videos tab
+            val videosTab = channelExtractor.tabs.firstOrNull { tab ->
+                tab.contentFilters.contains(ChannelTabs.VIDEOS)
+            } ?: return@withRetry emptyList()
 
-        val tabInfo = ChannelTabInfo.getInfo(ServiceList.YouTube, videosTab)
+            val tabInfo = ChannelTabInfo.getInfo(ServiceList.YouTube, videosTab)
 
-        tabInfo.relatedItems.mapNotNull { item ->
-            try {
-                val streamItem = item as? StreamInfoItem ?: return@mapNotNull null
-                VideoEntity(
-                    id = extractIdFromUrl(streamItem.url),
-                    channelId = channelId,
-                    title = streamItem.name ?: "Unknown",
-                    thumbnailUrl = bestThumbnail(streamItem.thumbnails),
-                    duration = streamItem.duration,
-                    publishedAt = streamItem.uploadDate?.offsetDateTime()
-                        ?.toInstant()?.toEpochMilli() ?: 0L,
-                    downloadStatus = DownloadStatus.NONE
-                )
-            } catch (e: Exception) {
-                null
+            tabInfo.relatedItems.mapNotNull { item ->
+                try {
+                    val streamItem = item as? StreamInfoItem ?: return@mapNotNull null
+                    VideoEntity(
+                        id = extractIdFromUrl(streamItem.url),
+                        channelId = channelId,
+                        title = streamItem.name ?: "Unknown",
+                        thumbnailUrl = bestThumbnail(streamItem.thumbnails),
+                        duration = streamItem.duration,
+                        publishedAt = streamItem.uploadDate?.offsetDateTime()
+                            ?.toInstant()?.toEpochMilli() ?: 0L,
+                        downloadStatus = DownloadStatus.NONE
+                    )
+                } catch (e: Exception) {
+                    null
+                }
             }
         }
     }
@@ -132,6 +172,10 @@ class YouTubeExtractorService @Inject constructor() {
         } catch (e: Exception) {
             0L
         }
+    }
+
+    companion object {
+        private const val TAG = "YTAudio"
     }
 }
 
