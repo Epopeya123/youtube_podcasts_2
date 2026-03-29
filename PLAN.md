@@ -95,3 +95,15 @@ Generate the Gradle project structure manually in `c:\app\`.
 
 ## Permissions (AndroidManifest.xml)
 - `INTERNET`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `POST_NOTIFICATIONS`, `WAKE_LOCK`
+
+---
+
+## Instructions for Claude Code Sessions
+
+1. **Always read `CLAUDE.md` and `.claude/STATUS.md` before starting work.**
+2. **Set environment variables** (listed in CLAUDE.md) before running any build/SDK command.
+3. **Update `.claude/STATUS.md`** after completing each phase - mark it DONE with the date and note any issues encountered.
+4. **Commit frequently** with detailed messages (see CLAUDE.md for format). Each phase should have at least one commit. Logical sub-units within a phase should be separate commits.
+5. **Test after every change** - compile, run unit tests, and if UI changed, install on emulator and verify.
+6. **Don't skip the verify step** listed at the end of each phase in this plan. If verification fails, fix before moving on.
+7. **If something breaks**, check `adb logcat` and fix the root cause. Don't paper over errors.
