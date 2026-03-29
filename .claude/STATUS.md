@@ -3,9 +3,33 @@
 > **Update this file after completing each phase or significant milestone.**
 > Future Claude Code sessions read this to know where to pick up.
 
-## Current Phase: Phase 3 (Download Service) - NOT STARTED
+## Current Phase: Phase 7 (Integration Testing) - NOT STARTED
 
 ## Completed Phases
+
+### Phase 6: Background Channel Checking - DONE (2026-03-29)
+- ChannelCheckWorker (HiltWorker + CoroutineWorker)
+- 6-hour periodic schedule via WorkManager with network constraint
+- Custom WorkManager initialization via Hilt worker factory
+- Disabled default WorkManager initializer in manifest
+
+### Phase 5: UI Screens - DONE (2026-03-29)
+- HomeScreen: paste URL + download button
+- ChannelsScreen: list channels, refresh per channel, add/delete, FAB
+- DownloadsScreen: list videos with status icons, tap to play
+- AppNavGraph: bottom nav (Home/Channels/Downloads) + PlayerBar overlay
+- AddChannelDialog: input channel URL
+
+### Phase 4: Audio Playback - DONE (2026-03-29)
+- AudioPlaybackService (Media3 MediaSessionService + ExoPlayer)
+- PlayerViewModel with MediaController connection
+- PlayerBar (mini player) and PlayerScreen (full player)
+- Controls: play/pause, seek forward/back 10s, seek slider
+
+### Phase 3: Download Service - DONE (2026-03-29)
+- AudioDownloadService (foreground service with notification)
+- OkHttp streaming download to MediaStore Music/YouTubeDownloads/
+- DownloadRepository: startDownload(videoId) and downloadByUrl(url)
 
 ### Phase 2: Data Layer - DONE (2026-03-29)
 - Room DB with ChannelEntity and VideoEntity (FK with CASCADE)
@@ -33,13 +57,7 @@
 - Emulator NOT yet launched (will launch when needed for testing)
 
 ## Pending Phases
-- Phase 1: Project Scaffolding (Gradle setup, build files)
-- Phase 2: Data Layer (Room DB, NewPipe Extractor, repositories)
-- Phase 3: Download Service (foreground service, MediaStore)
-- Phase 4: Audio Playback (Media3/ExoPlayer, MediaSession)
-- Phase 5: UI Screens (Compose, navigation, all screens)
-- Phase 6: Background Channel Checking (WorkManager)
-- Phase 7: Integration Testing
+- Phase 7: Integration Testing (emulator test, unit tests, UI tests)
 
 ## Blockers / Issues
 - `choco` requires admin privileges - all installs done via direct download
