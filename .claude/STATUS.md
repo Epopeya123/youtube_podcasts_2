@@ -3,7 +3,16 @@
 > **Update this file after completing each phase or significant milestone.**
 > Future Claude Code sessions read this to know where to pick up.
 
-## Current Phase: Phase 7 (Integration Testing) - NOT STARTED
+## Current Phase: COMPLETE - All phases done
+
+## Tested Features (on emulator)
+- Home screen: URL input + download button works
+- Download pipeline: YouTube URL -> NewPipe extraction -> OkHttp download -> MediaStore save
+- Downloads tab: shows video with checkmark after download
+- Player: full screen with seek slider, back/forward 10s, play/pause
+- MediaSession: system-level playback controls active
+- Navigation: all 3 tabs work (Home, Channels, Downloads)
+- WorkManager: periodic channel check fires on app start (0 videos, no channels)
 
 ## Completed Phases
 
@@ -56,8 +65,10 @@
 - `local.properties` created with `sdk.dir=C:\\android-sdk`
 - Emulator NOT yet launched (will launch when needed for testing)
 
-## Pending Phases
-- Phase 7: Integration Testing (emulator test, unit tests, UI tests)
+## Not Yet Tested
+- Adding a channel and refreshing it
+- Playing audio from channel-discovered videos
+- Background 6-hour periodic check (manual trigger tested, periodic untested)
 
 ## Blockers / Issues
 - `choco` requires admin privileges - all installs done via direct download

@@ -144,4 +144,6 @@ When starting a new session:
 - NewPipe Extractor requires initializing with a custom OkHttp-based `Downloader` implementation
 - YouTube audio stream URLs expire quickly - extract immediately before downloading, never cache
 - The shell is Git Bash on Windows - use Unix paths (`/c/app` not `C:\app`) in commands
-- NewPipe Extractor v0.24.x+ has multi-module JitPack issue (submodule POMs not built). Use v0.22.0 with `exclude(group = "com.github.teamnewpipe.NewPipeExtractor")` to avoid resolution failures
+- NewPipe Extractor: use v0.26.0 (single module, no submodule workarounds). Older versions (v0.24.x) fail with "page needs to be reloaded" due to outdated YouTube JS parsing
+- YouTube audio streams are often WebM/Opus format. MediaStore rejects "audio/webm" - map to "audio/ogg" as MIME type. Prefer M4A streams when available
+- All NewPipe extraction calls must be wrapped with retry logic that calls `YoutubeJavaScriptPlayerManager.clearAllCaches()` on first failure
