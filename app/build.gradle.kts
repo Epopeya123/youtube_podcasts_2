@@ -74,9 +74,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // NewPipe Extractor
-    implementation("com.github.teamnewpipe:NewPipeExtractor:v0.22.0") {
-        exclude(group = "com.github.teamnewpipe.NewPipeExtractor")
-    }
+    implementation("com.github.teamnewpipe.NewPipeExtractor:extractor:v0.24.2")
+    implementation("com.github.teamnewpipe.NewPipeExtractor:timeago-parser:v0.24.2")
 
     // Media3 / ExoPlayer
     implementation("androidx.media3:media3-exoplayer:1.3.1")
