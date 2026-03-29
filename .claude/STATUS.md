@@ -3,9 +3,19 @@
 > **Update this file after completing each phase or significant milestone.**
 > Future Claude Code sessions read this to know where to pick up.
 
-## Current Phase: Phase 2 (Data Layer) - NOT STARTED
+## Current Phase: Phase 3 (Download Service) - NOT STARTED
 
 ## Completed Phases
+
+### Phase 2: Data Layer - DONE (2026-03-29)
+- Room DB with ChannelEntity and VideoEntity (FK with CASCADE)
+- TypeConverters for DownloadStatus enum
+- DAOs with Flow-based queries for reactive UI
+- NewPipe Extractor v0.24.2 via explicit submodules (`extractor` + `timeago-parser`)
+- Custom OkHttp Downloader for NewPipe initialization
+- YouTubeExtractorService: audio extraction, video info, channel info, channel videos via tabs API
+- ChannelRepository and VideoRepository with Hilt DI
+- **Key learning**: NewPipe v0.24.x API uses `getAvatars()`/`getThumbnails()` returning `List<Image>`, `getContent()` for stream URLs, `ChannelTabInfo` for video listings
 
 ### Phase 1: Project Scaffolding - DONE (2026-03-29)
 - Gradle project compiles successfully: `./gradlew assembleDebug` produces 20MB APK
