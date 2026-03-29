@@ -27,6 +27,11 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".service.AudioDownloadService"
+            android:foregroundServiceType="dataSync"
+            android:exported="false" />
+
     </application>
 
 </manifest>
