@@ -3,9 +3,16 @@
 > **Update this file after completing each phase or significant milestone.**
 > Future Claude Code sessions read this to know where to pick up.
 
-## Current Phase: Phase 1 (Project Scaffolding) - NOT STARTED
+## Current Phase: Phase 2 (Data Layer) - NOT STARTED
 
 ## Completed Phases
+
+### Phase 1: Project Scaffolding - DONE (2026-03-29)
+- Gradle project compiles successfully: `./gradlew assembleDebug` produces 20MB APK
+- All dependencies resolved: Compose BOM 2024.05.00, Media3 1.3.1, Room 2.6.1, Hilt 2.51, WorkManager 2.9.0, OkHttp 4.12.0
+- **NewPipe Extractor v0.22.0** (not v0.24.x+) - newer versions have multi-module JitPack issue. Must exclude submodule group: `exclude(group = "com.github.teamnewpipe.NewPipeExtractor")`
+- Minimal app: MainActivity with Compose, YTAudioApp with Hilt, Material 3 theme
+- Gradle wrapper 8.7, JDK 17 target
 
 ### Phase 0: Environment Setup - DONE (2026-03-29)
 - JDK 17.0.18 installed at `/c/dev/jdk17/jdk-17.0.18+8`

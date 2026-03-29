@@ -144,3 +144,4 @@ When starting a new session:
 - NewPipe Extractor requires initializing with a custom OkHttp-based `Downloader` implementation
 - YouTube audio stream URLs expire quickly - extract immediately before downloading, never cache
 - The shell is Git Bash on Windows - use Unix paths (`/c/app` not `C:\app`) in commands
+- NewPipe Extractor v0.24.x+ has multi-module JitPack issue (submodule POMs not built). Use v0.22.0 with `exclude(group = "com.github.teamnewpipe.NewPipeExtractor")` to avoid resolution failures
