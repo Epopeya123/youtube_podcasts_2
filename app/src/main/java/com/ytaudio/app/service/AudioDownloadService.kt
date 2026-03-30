@@ -56,7 +56,11 @@ class AudioDownloadService : Service() {
 
         Log.i(TAG, "Download requested: videoId=$videoId url=$videoUrl")
 
-        startForeground(NOTIFICATION_ID, buildNotification("Preparing download..."))
+        try {
+            startForeground(NOTIFICATION_ID, buildNotification("Preparing download..."))
+        } catch (e: Exception) {
+            Log.w(TAG, "startForeground failed (notification permission likely denied), continuing anyway", e)
+        }
         activeDownloads.incrementAndGet()
 
         scope.launch {
@@ -184,8 +188,12 @@ class AudioDownloadService : Service() {
     }
 
     private fun updateNotification(text: String) {
-        val manager = getSystemService(NotificationManager::class.java)
-        manager.notify(NOTIFICATION_ID, buildNotification(text))
+        try {
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.notify(NOTIFICATION_ID, buildNotification(text))
+        } catch (e: Exception) {
+            // Notification permission may be denied — download still works
+        }
     }
 
     override fun onDestroy() {
