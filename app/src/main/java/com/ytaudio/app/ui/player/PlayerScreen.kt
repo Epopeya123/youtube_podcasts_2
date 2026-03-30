@@ -1,5 +1,6 @@
 package com.ytaudio.app.ui.player
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -49,6 +50,8 @@ fun PlayerScreen(
     val duration by viewModel.duration.collectAsState()
 
     val video = currentVideo ?: return
+
+    BackHandler { onCollapse() }
 
     Scaffold(
         topBar = {
