@@ -13,6 +13,13 @@
 - MediaSession: system-level playback controls active
 - Navigation: all 3 tabs work (Home, Channels, Downloads)
 - WorkManager: periodic channel check fires on app start (0 videos, no channels)
+- Channel subscription: add channel via URL, shows in Channels tab with name (Rick Astley tested)
+- Channel refresh: discovers recent videos, lists them in Downloads tab with download icons
+- Channel video download: tap download icon -> extracts audio -> saves to MediaStore -> shows checkmark
+- Channel video playback: tap downloaded video -> opens full player with controls
+- Home screen download: paste URL (Me at the zoo) -> "Download started!" -> completes successfully
+- Back navigation: BackHandler in PlayerScreen returns to previous screen with mini PlayerBar
+- Mini PlayerBar: shows on all screens with current track, back/pause/forward controls
 
 ## Completed Phases
 
@@ -66,9 +73,7 @@
 - Emulator NOT yet launched (will launch when needed for testing)
 
 ## Not Yet Tested
-- Adding a channel and refreshing it
-- Playing audio from channel-discovered videos
-- Background 6-hour periodic check (manual trigger tested, periodic untested)
+- Background 6-hour periodic check (manual trigger tested, periodic untested - requires waiting 6 hours)
 
 ## Blockers / Issues
 - `choco` requires admin privileges - all installs done via direct download
